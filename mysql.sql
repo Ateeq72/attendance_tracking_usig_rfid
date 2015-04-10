@@ -20,3 +20,14 @@ CREATE TABLE IF NOT EXISTS `users` (
   `active` enum('0','1') COLLATE utf8_czech_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+#we use this!
+
+CREATE TABLE IF NOT EXISTS `readings` (
+  `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT,
+  `tagId`  varchar(255) COLLATE utf8_czech_ci NOT NULL ,
+  `time` bigint(14) unsigned NOT NULL,
+  `action`  varchar(255) COLLATE utf8_czech_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
