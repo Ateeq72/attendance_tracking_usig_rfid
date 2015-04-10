@@ -1,0 +1,97 @@
+#!/usr/bin/python
+
+import display
+import em_18
+import mysql
+
+import sys
+import tty
+import termios
+import logging
+
+import thread
+import time
+
+import RPi.GPIO as GPIO
+
+def read():
+    cardId=id
+    print("your cardID was:")
+    print cardId
+    return cardId  
+    
+def userEntry(name):
+    print("Hi! %s" +name)
+    display.lcdWriteFirstLine("Hi! %s" +name)
+    insertReading(name,"entry")
+    print("your data was recorded")
+    display.lcdWriteSecondLine("your data was recorded")
+    print("done")
+
+def userLeave(name):
+    print("Hi! %s" +name)
+    display.lcdWriteFirstLine("Hi! %s" +name)
+    insertReading(name,"leave")
+    print("your data was recorded")
+    display.lcdWriteSecondLine("your data was recorded")
+
+
+def getLastEntry(tag):
+    getLastReading(tag)
+
+def deleteLastReading(tag):
+    deleteLastReading(tag)
+    
+
+def actualprocess(ivalue):
+   if(ivalue==1):
+     print("Entry!...")
+     print("Swipe your card!")
+     display.lcdWriteFirstLine("Hi Their!. Please..")
+     display.lcdWriteSecondLine("Swipe your Card")
+     reqID= read()
+        if(reqID=="18008DAE4D76")
+           userEntry("Ateeq")
+        elif(reqID=="4000634B650D")
+           userEntry("Altaf")
+        elif(reqID="40006352D8A9")
+           userEntry("John")
+   if(ivalue==2):
+     print("Leave..")
+     print("Swipe your card!")
+     display.lcdWriteFirstLine("Hi Their!. Please..")
+     display.lcdWriteSecondLine("Swipe your Card")
+     reqID= read()
+        if(reqID=="18008DAE4D76")
+           userLeave("Ateeq")
+        elif(reqID=="4000634B650D")
+           userLeave("Altaf")
+        elif(reqID="40006352D8A9")
+           userLeave("John")
+    if(ivalue==3):
+     print("View Last Entry!")
+     print("Swipe your card!")
+     display.lcdWriteFirstLine("Hi Their!. Please..")
+     display.lcdWriteSecondLine("Swipe your Card")
+     reqID= read()
+        if(reqID=="18008DAE4D76")
+           getLastEntry("Ateeq")
+        elif(reqID=="4000634B650D")
+           getLastEntry("Altaf")
+        elif(reqID="40006352D8A9")
+           getLastEntry("John")
+if(ivalue==2):
+     print("Leave..")
+     print("Swipe your card!")
+     display.lcdWriteFirstLine("Hi Their!. Please..")
+     display.lcdWriteSecondLine("Swipe your Card")
+     reqID= read()
+        if(reqID=="18008DAE4D76")
+           userLeave("Ateeq")
+        elif(reqID=="4000634B650D")
+           userLeave("Altaf")
+        elif(reqID="40006352D8A9")
+           userLeave("John")
+
+  
+     
