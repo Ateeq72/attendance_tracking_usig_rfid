@@ -3,6 +3,9 @@ import serial
 import display
 import mysql
 
+import datetime
+import time
+import os
 import sys
 import tty
 import termios
@@ -41,6 +44,7 @@ def userEntry(name):
     print("Hi! " +name)
     display.lcdWriteFirstLine("Hi! " +name)
     mysql.insertReading(name,"entry")
+    os.system("sudo fswebcam -d /dev/video0 -r 640x480 -S 6 /home/pi/attendance/pics/%m-%d-%y-%H%M.jpg")
     print("your data was recorded")
     display.lcdWriteSecondLine("your data was recorded")
     print("done")
@@ -49,6 +53,7 @@ def userLeave(name):
     print("Hi! " +name)
     display.lcdWriteFirstLine("Hi! " +name)
     mysql.insertReading(name,"leave")
+    os.system("sudo fswebcam -d /dev/video0 -r 640x480 -S 6 /home/pi/attendance/pics/%m-%d-%y-%H%M.jpg")
     print("your data was recorded")
     display.lcdWriteSecondLine("your data was recorded")
 
@@ -57,10 +62,11 @@ def getLastEntry(tag):
     lastentry=mysql.getLastReading(tag)
     print("Hi!",tag)
     print(lastentry)
+    os.system("sudo fswebcam -d /dev/video0 -r 640x480 -S 6 /home/pi/attendance/pics/%m-%d-%y-%H%M.jpg")
 
 def deleteLastEntry(tag):
     mysql.deleteLastReading(tag)
-    
+    os.system("sudo fswebcam -d /dev/video0 -r 640x480 -S 6 /home/pi/attendance/pics/%m-%d-%y-%H%M.jpg")
 
 def actualprocess(ivalue):
    if(ivalue==1):
