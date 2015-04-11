@@ -34,15 +34,13 @@ def printDateToDisplay():
 def addnewUser():
     print("Swipe Your Card Now!")
     tag = read()
+    print("Type the info within " " ")
     name = raw_input("Enter Your Name : ") #used when connected via ssh
     surname = raw_input("Enter Your Surname **Needed : ")
     print("Processing!")
     mysql.addUser(tag,name,surname)
 
-def removeExistUser():
-   tagdata = read()
-   tag = mysql.getuserName(tagdata)
-   print(tag)
+def removeExistUser(tag):
    print("Proccesing!")
    mysql.removeUser(tag) 
 
@@ -57,8 +55,7 @@ def read():
     
 def userEntry():
     tagdata = read()
-    name = mysql.getuserName(tagdata)
-    print(name)
+    name = mysql.getuserName(tag_data)
     print("Hi! " +name)
     display.lcdWriteFirstLine("Hi! " +name)
     mysql.insertReading(name,"entry")
@@ -67,10 +64,7 @@ def userEntry():
     display.lcdWriteSecondLine("your data was recorded")
     print("done")
 
-def userLeave():
-    tagdata = read()
-    name = mysql.getuserName(tagdata)
-    print(name)
+def userLeave(name):
     print("Hi! " +name)
     display.lcdWriteFirstLine("Hi! " +name)
     mysql.insertReading(name,"leave")
@@ -79,19 +73,13 @@ def userLeave():
     display.lcdWriteSecondLine("your data was recorded")
 
 
-def getLastEntry():
-    tagdata = read()
-    tag = mysql.getuserName(tagdata)
-    print(tag)
+def getLastEntry(tag):
     lastentry=mysql.getLastReading(tag)
     print("Hi!",tag)
     print(lastentry)
     #os.system("sudo fswebcam -d /dev/video0 -r 640x480 -S 6 /home/pi/attendance/pics/%m-%d-%y-%H%M.jpg")
 
-def deleteLastEntry():
-    tagdata = read()
-    tag = mysql.getuserName(tagdata)
-    print(tag)
+def deleteLastEntry(tag):
     mysql.deleteLastReading(tag)
     print("Hi!.. ",tag)
     os.system("sudo fswebcam -d /dev/video0 -r 640x480 -S 6 /home/pi/attendance/pics/%m-%d-%y-%H%M.jpg")
@@ -103,27 +91,42 @@ def actualprocess(ivalue):
      display.lcdWriteFirstLine("Hi Their!. Please..")
      display.lcdWriteSecondLine("Swipe your Card")
      userEntry()
-
    if(ivalue==2):
      print("Leave..")
      print("Swipe your card!")
      display.lcdWriteFirstLine("Hi Their!. Please..")
      display.lcdWriteSecondLine("Swipe your Card")
-     userLeave()
-     
+     reqID= read()
+     if(reqID=="18008DAE4D76"):
+           userLeave("Ateeq")
+     elif(reqID=="4000634B650D"):
+           userLeave("Altaf")
+     elif(reqID=="40006352D8A9"):
+           userLeave("John")
    if(ivalue==3):
      print("View Last Entry!")
      print("Swipe your card!")
      display.lcdWriteFirstLine("Hi Their!. Please..")
      display.lcdWriteSecondLine("Swipe your Card")
-     getLastEntry()
-
+     reqID= read()
+     if(reqID=="18008DAE4D76"):
+           getLastEntry("Ateeq")
+     elif(reqID=="4000634B650D"):
+           getLastEntry("Altaf")
+     elif(reqID=="40006352D8A9"):
+           getLastEntry("John")
    if(ivalue==4):
      print("Remove Last Entry..")
      print("Swipe your card!")
      display.lcdWriteFirstLine("Hi Their!. Please..")
      display.lcdWriteSecondLine("Swipe your Card")
-     deleteLastEntry()     
+     reqID= read()
+     if(reqID=="18008DAE4D76"):
+          deleteLastEntry("Ateeq")
+     elif(reqID=="4000634B650D"):
+          deleteLastEntry("Altaf")
+     elif(reqID=="40006352D8A9"):
+          deleteLastEntry("John")
 
    if(ivalue==5):
      print("Adding User!")
@@ -135,7 +138,8 @@ def actualprocess(ivalue):
      print("Removing User")
      display.lcdWriteFirstLine("Removing User!")
      display.lcdWriteSecondLine("Swipe your Card")
-     removeExistUser()
+     tagid = read()
+     removeExistUser(tagid)
 
 def main():
     try:

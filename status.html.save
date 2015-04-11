@@ -1,0 +1,46 @@
+<html>
+<Title> Wasim's Attendance Entry!</Title>
+<body>
+<center>
+
+<h1> Your Employee Details </h1>
+<?php
+$servername = "localhost";
+$username = "pi";
+$password = "raspberry";
+$dbname = "pi";
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+} 
+
+$sql = "SELECT * from readings";
+$result = $conn->query($sql);
+
+echo "<table border='1'>
+<tr>
+<th>id</th>
+<th>TagID</th>
+<th>Time</th>
+<th>Action</th>
+</tr>";
+while($row = mysqli_fetch_array($result))
+{
+echo "<tr>";
+echo "<td>" . $row['id'] . "</td>";
+echo "<td>" . $row['tagId'] . "</td>";
+echo "<td>" . $row['time'] . "</td>";
+echo "<td>" . $row['action'] . "</td>";
+echo "</tr>";
+}
+echo "</table>";
+
+$conn->close();
+?>
+</center>
+
+</body>
+</html>

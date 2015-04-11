@@ -27,14 +27,15 @@ def connect():
 def insertReading(tagId,action):
     db = connect()
     cur = db.cursor()
-    currentTime=strftime("%Y%m%d%H%M%S", localtime())
-    cur.execute("""INSERT INTO readings (tagId, time, action) VALUES (%s, %s, %s)""",(tagId,currentTime,action))
+    currentTime=strftime("%H%M%S", localtime())
+    currentDate=strftime("%Y%m%d", localtime())
+    cur.execute("""INSERT INTO readings (tagId, time, date, action) VALUES (%s, %s, %s, %s)""",(tagId,currentTime,currentDate,action))
     db.commit()
     cur.execute("SELECT name,surname FROM users WHERE id = (SELECT userId FROM cards WHERE tagId=%s LIMIT 1)",(tagId))
     row = cur.fetchone();
     db.close()
     if(row==None):
-        return "Neznama karta"
+        return "Nothing found!"
     else:
         return unidecode(row[1]+", "+row[0])
 
@@ -44,7 +45,7 @@ def getLastReading(tagId):
     checkTime = datetime.datetime.now() - datetime.timedelta(minutes=5)
     db = connect()
     cur = db.cursor()
-    cur.execute("SELECT time, action FROM readings WHERE tagId=%s AND time>%s ORDER BY time DESC LIMIT 1",(tagId,checkTime.strftime("%Y%m%d%H%M%S")))
+    cur.execute("SELECT time, action FROM readings WHERE tagId=%s AND time>%s ORDER BY time DESC LIMIT 1",(tagId,checkTime.strftime("%H:%M:%S")))
     row = cur.fetchone()
     db.close()
     return row
@@ -54,6 +55,46 @@ def deleteLastReading(tagId):
     checkTime = datetime.datetime.now() - datetime.timedelta(minutes=6)
     db = connect()
     cur = db.cursor()
-    cur.execute("DELETE FROM readings WHERE tagId=%s AND time>%s ORDER BY time DESC LIMIT 1",(tagId,checkTime.strftime("%Y%m%d%H%M%S")))
+    cur.execute("DELETE FROM readings WHERE tagId=%s AND time>%s ORDER BY time DESC LIMIT 1",(tagId,checkTime.strftime("%H%M%S")))
     row = cur.fetchone()
     db.close()
+    print("Deleted Successfully")
+
+def addUser(tagId,name,surname):
+    db = connect()
+    cur = db.cursor()
+    cur.execute("INSERT INTO users (tagId, name, surname) VALUES (%s, %s, %s)",(tagId,name,surname))
+    db.commit()
+    print("Added Successfully!")
+    db.close()
+
+def removeUser(tagId):
+    db = connect()
+    cur = db.cursor()
+    cur.execute("DELETE FROM users WHERE tagId=%s ",(tagId))
+    db.commit()
+    print("Removed Successfully!")
+    db.close()
+
+def getuserName(tagId):
+    def getname(tagId):
+      db = connect()
+      cur = db.cursor()
+      cur1 = db.cursor()
+      cur.execute("SELECT name FROM users WHERE tagId=%s",(tagId))
+      name_data = cur.fetchone()[0]
+      db.close()
+      return name_data
+    def getsurname(tagId):
+      db = connect()
+      cur = db.cursor()
+      cur1 = db.cursor()
+      cur.execute("SELECT surname FROM users WHERE tagId=%s",(tagId))
+      name_data = cur.fetchone()[0]
+      db.close()
+      return name_data
+    full_name = getname(tagId) + " " + getsurname(tagId)
+    return full_name
+
+
+
