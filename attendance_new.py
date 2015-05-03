@@ -12,6 +12,7 @@ import logging
 import RPi.GPIO as GPIO
 import thread
 import time
+from time import sleep
 import math, operator
 from PIL import Image
 
@@ -30,6 +31,7 @@ def cmpimg(file1,file2):
 
     rms = math.sqrt(reduce(operator.add,
                                 map(lambda a,b: (a-b)**2, h1, h2))/len(h1))
+    print rms
     return rms
 
 
@@ -50,7 +52,6 @@ def printDateToDisplay():
 
 def addnewUser():
     print("Swipe Your Card Now!")
-    os.system(' echo " Please Swipe your Card " | festival --tts ')
     tag = read()
     name = raw_input("Enter Your Name : ") #used when connected via ssh
     surname = raw_input("Enter Your Surname **Needed : ")
@@ -72,14 +73,14 @@ def removeExistUser():
 def read():
     ser = serial.Serial ("/dev/ttyAMA0")                           #Open named p$
     ser.baudrate = 9600                                            #Set baud rat$
-    data = ser.read(12)                                            #Read 12 char$
+    data = ser.read(12)
+    sleep(1)                                            #Read 12 char$
     ser.close ()  
     print("your cardID was:")
     print data
     return data 
     
 def userEntry():
-    os.system(' echo " Please Swipe your Card " | festival --tts ')
     tagdata = read()
     onlyname = mysql.getonlyName(tagdata)
     name = mysql.getuserName(tagdata)
@@ -88,17 +89,19 @@ def userEntry():
     os.system(' echo " Hi ! ' + name + ' " | festival --tts ')
     lcd.clear()
     lcd.message("Hi! " +name)
-    lcd.message("\n Entry!... ")
-    
+    lcd.message("\n Entry!... ")    
     cmd='sudo fswebcam -d /dev/video0 -r 640x480 -S 6 /home/pi/attendance/pictures/%s_entry_%s.jpg' % (onlyname, timestp)
     os.system(cmd)
     pic1='/home/pi/attendance/users/%s.jpg' % (onlyname)
     pic2='/home/pi/attendance/pictures/%s_entry_%s.jpg' % (onlyname, timestp)
+    sleep(2)
     lcd.message("\n your data was obtained")
+    sleep(2)
     cmpvalue = cmpimg(pic1, pic2)
     if cmpvalue < 50:
       mysql.insertReading(name,"entry")
       print("your data was recorded")
+      os.system(' echo " your data was recorded " | festival --tts ')
       lcd.clear()
       lcd.message("your data was recorded")
       print("done")
@@ -108,7 +111,6 @@ def userEntry():
       lcd.message("Not a Match!")
 
 def userLeave():
-    os.system(' echo " Please Swipe your Card " | festival --tts ')
     tagdata = read()
     name = mysql.getuserName(tagdata)
     onlyname = mysql.getonlyName(tagdata)
@@ -123,12 +125,11 @@ def userLeave():
     os.system(cmd)
     print("your data was recorded")
     lcd.clear()
-    lcd.message("\n your data was recorded")
+    lcd.message("your data was \n recorded")
     os.system(' echo " Thanks See you Again " | festival --tts ')
 
 
 def getLastEntry():
-    os.system(' echo " Please Swipe your Card " | festival --tts ')
     tagdata = read()
     tag = mysql.getuserName(tagdata)
     print(tag)
@@ -152,10 +153,11 @@ def deleteLastEntry():
     os.system(cmd)
 
 def actualprocess(ivalue):
+   lcd.clear()
    if(ivalue==1):
      print("Entry!...")
      print("Swipe your card!")
-     lcd.message("Hi Their!. Please..")
+     lcd.message("Hi Their! Please..")
      lcd.message("\n Swipe your Card")
      os.system(' echo " Action Entry was selected " | festival --tts ')
      userEntry()
@@ -163,7 +165,7 @@ def actualprocess(ivalue):
    if(ivalue==2):
      print("Leave..")
      print("Swipe your card!")
-     lcd.message("Hi Their!. Please..")
+     lcd.message("Hi Their! Please..")
      lcd.message("\n Swipe your Card")
      os.system(' echo " Action Leave was selected " | festival --tts ')
      userLeave()
@@ -171,7 +173,7 @@ def actualprocess(ivalue):
    if(ivalue==3):
      print("View Last Entry!")
      print("Swipe your card!")
-     lcd.message("Hi Their!. Please..")
+     lcd.message("Hi Their! Please..")
      lcd.message("\n Swipe your Card")
      os.system(' echo " Getting last entry " | festival --tts ')
      getLastEntry()
@@ -179,7 +181,7 @@ def actualprocess(ivalue):
    if(ivalue==4):
      print("Remove Last Entry..")
      print("Swipe your card!")
-     lcd.message("Hi Their!. Please..")
+     lcd.message("Hi Their! Please..")
      lcd.message("\n Swipe your Card")
      os.system(' echo " Deleting last entry " | festival --tts ')
      deleteLastEntry()     
