@@ -89,12 +89,10 @@ def userEntry():
     lcd.clear()
     lcd.message("Hi! " +name)
     lcd.message("\n Entry!... ")
-    
     cmd='sudo fswebcam -d /dev/video0 -r 640x480 -S 6 /home/pi/attendance/pictures/%s_entry_%s.jpg' % (onlyname, timestp)
     os.system(cmd)
     pic1='/home/pi/attendance/users/%s.jpg' % (onlyname)
     pic2='/home/pi/attendance/pictures/%s_entry_%s.jpg' % (onlyname, timestp)
-    lcd.message("\n your data was obtained")
     cmpvalue = cmpimg(pic1, pic2)
     if cmpvalue < 50:
       mysql.insertReading(name,"entry")
@@ -104,7 +102,6 @@ def userEntry():
       print("done")
     elif cmpvalue < 50:
       print("Not a Match!")
-      lcd.clear()
       lcd.message("Not a Match!")
 
 def userLeave():

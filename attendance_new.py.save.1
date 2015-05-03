@@ -1,7 +1,8 @@
 #!/usr/bin/python
 import serial
-from Adafruit_CharLCD import Adafruit_CharLCD
+import display
 import mysql
+import cmg
 import datetime
 import time
 import os
@@ -9,30 +10,14 @@ import sys
 import tty
 import termios
 import logging
-import RPi.GPIO as GPIO
 import thread
 import time
-import math, operator
-from PIL import Image
 
+import RPi.GPIO as GPIO
 VERBOSE=True
-
-lcd = Adafruit_CharLCD()
-
-lcd.begin(16, 1)
 
 global timestp 
 timestp = time.strftime("%Y:%m:%d-%H:%M:%S")
-
-def cmpimg(file1,file2):
-    h1 = Image.open(file1).histogram()
-    h2 = Image.open(file2).histogram()
-
-    rms = math.sqrt(reduce(operator.add,
-                                map(lambda a,b: (a-b)**2, h1, h2))/len(h1))
-    return rms
-
-
 
 def onScreen(message):
     if(VERBOSE):
@@ -44,13 +29,12 @@ def printDateToDisplay():
         #Display current time on display, until global variable is set
         if displayTime!=True:
             thread.exit()
-        display.message(time.strftime("%d.%m. %H:%M:%S", time.localtime()))
+        display.lcdWriteFirstLine(time.strftime("%d.%m. %H:%M:%S", time.localtime()))
         onScreen(time.strftime("%d.%m.%Y %H:%M:%S", time.localtime()))
         time.sleep(1)
 
 def addnewUser():
     print("Swipe Your Card Now!")
-    os.system(' echo " Please Swipe your Card " | festival --tts ')
     tag = read()
     name = raw_input("Enter Your Name : ") #used when connected via ssh
     surname = raw_input("Enter Your Surname **Needed : ")
@@ -79,64 +63,47 @@ def read():
     return data 
     
 def userEntry():
-    os.system(' echo " Please Swipe your Card " | festival --tts ')
     tagdata = read()
     onlyname = mysql.getonlyName(tagdata)
     name = mysql.getuserName(tagdata)
     print(name)
     print("Hi! " +name)
-    os.system(' echo " Hi ! ' + name + ' " | festival --tts ')
-    lcd.clear()
-    lcd.message("Hi! " +name)
-    lcd.message("\n Entry!... ")
-    
+    display.lcdWriteFirstLine("Hi! " +name)
     cmd='sudo fswebcam -d /dev/video0 -r 640x480 -S 6 /home/pi/attendance/pictures/%s_entry_%s.jpg' % (onlyname, timestp)
     os.system(cmd)
     pic1='/home/pi/attendance/users/%s.jpg' % (onlyname)
+    p1=cv2.imread(pic1)
     pic2='/home/pi/attendance/pictures/%s_entry_%s.jpg' % (onlyname, timestp)
-    lcd.message("\n your data was obtained")
-    cmpvalue = cmpimg(pic1, pic2)
-    if cmpvalue < 50:
+    p2=cv2.imread(pic2)
+    cmpvalue = cmpimg.compare_images(p1, p2,"Comparing wait")
+    if cmpvalue > 50:
       mysql.insertReading(name,"entry")
       print("your data was recorded")
-      lcd.clear()
-      lcd.message("your data was recorded")
+      display.lcdWriteSecondLine("your data was recorded")
       print("done")
-    elif cmpvalue < 50:
+    elif cmvalue < 50:
       print("Not a Match!")
-      lcd.clear()
-      lcd.message("Not a Match!")
-
 def userLeave():
-    os.system(' echo " Please Swipe your Card " | festival --tts ')
     tagdata = read()
     name = mysql.getuserName(tagdata)
     onlyname = mysql.getonlyName(tagdata)
     print(name)
     print("Hi! " +name)
-    os.system(' echo " Hi ! ' + name + ' " | festival --tts ')
-    lcd.clear()
-    lcd.message("Hi! " +name)
-    lcd.message("\n Leave!...")
+    display.lcdWriteFirstLine("Hi! " +name)
     mysql.insertReading(name,"leave")
     cmd='sudo fswebcam -d /dev/video0 -r 640x480 -S 6 /home/pi/attendance/pictures/%s_leave_%s.jpg' % (onlyname, timestp)
     os.system(cmd)
     print("your data was recorded")
-    lcd.clear()
-    lcd.message("\n your data was recorded")
-    os.system(' echo " Thanks See you Again " | festival --tts ')
+    display.lcdWriteSecondLine("your data was recorded")
 
 
 def getLastEntry():
-    os.system(' echo " Please Swipe your Card " | festival --tts ')
     tagdata = read()
     tag = mysql.getuserName(tagdata)
     print(tag)
     lastentry=mysql.getLastReading(tag)
     print("Hi!",tag)
     print(lastentry)
-    lcd.clear()
-    lcd.message("Last Entry \n " + lastentry)
     #os.system("sudo fswebcam -d /dev/video0 -r 640x480 -S 6 /home/pi/attendance/pics/%m-%d-%y-%H%M.jpg")
 
 def deleteLastEntry():
@@ -146,8 +113,6 @@ def deleteLastEntry():
     print(tag)
     mysql.deleteLastReading(tag)
     print("Hi!.. ",tag)
-    lcd.clear()
-    lcd.message("Deleted")
     cmd='sudo fswebcam -d /dev/video0 -r 640x480 -S 6 /home/pi/attendance/pictures/deleted_last_entry_%s_%s.jpg' % (onlyname, timestp)
     os.system(cmd)
 
@@ -155,54 +120,48 @@ def actualprocess(ivalue):
    if(ivalue==1):
      print("Entry!...")
      print("Swipe your card!")
-     lcd.message("Hi Their!. Please..")
-     lcd.message("\n Swipe your Card")
-     os.system(' echo " Action Entry was selected " | festival --tts ')
+     display.lcdWriteFirstLine("Hi Their!. Please..")
+     display.lcdWriteSecondLine("Swipe your Card")
      userEntry()
 
    if(ivalue==2):
      print("Leave..")
      print("Swipe your card!")
-     lcd.message("Hi Their!. Please..")
-     lcd.message("\n Swipe your Card")
-     os.system(' echo " Action Leave was selected " | festival --tts ')
+     display.lcdWriteFirstLine("Hi Their!. Please..")
+     display.lcdWriteSecondLine("Swipe your Card")
      userLeave()
      
    if(ivalue==3):
      print("View Last Entry!")
      print("Swipe your card!")
-     lcd.message("Hi Their!. Please..")
-     lcd.message("\n Swipe your Card")
-     os.system(' echo " Getting last entry " | festival --tts ')
+     display.lcdWriteFirstLine("Hi Their!. Please..")
+     display.lcdWriteSecondLine("Swipe your Card")
      getLastEntry()
 
    if(ivalue==4):
      print("Remove Last Entry..")
      print("Swipe your card!")
-     lcd.message("Hi Their!. Please..")
-     lcd.message("\n Swipe your Card")
-     os.system(' echo " Deleting last entry " | festival --tts ')
+     display.lcdWriteFirstLine("Hi Their!. Please..")
+     display.lcdWriteSecondLine("Swipe your Card")
      deleteLastEntry()     
 
    if(ivalue==5):
      print("Adding User!")
-     lcd.message("Adding User!")
-     lcd.message("\n Swipe your Card")
+     display.lcdWriteFirstLine("Adding User!")
+     display.lcdWriteSecondLine("Swipe your Card")
      addnewUser()
 
    if(ivalue==6):
      print("Removing User")
-     lcd.message("Removing User!")
-     lcd.message("\n Swipe your Card")
+     display.lcdWriteFirstLine("Removing User!")
+     display.lcdWriteSecondLine("Swipe your Card")
      removeExistUser()
 
 def main():
     try:
-      while True: 
-        lcd.clear()
-        lcd.message('Choose an action...')
-	lcd.message("\n 1,2,3,4,5,6")
-        os.system(' echo " Please Choose an Action " | festival --tts ')
+      display.init()
+      while True:
+        display.lcdWriteSecondLine("Choose an action...")
 	global displayTime
         displayTime=True
         thr = thread.start_new_thread(printDateToDisplay, ())
@@ -212,11 +171,11 @@ def main():
 	  actualprocess(a)
 	else:
 	  print("Please press valid opton")
-	  os.system(' echo " Please Choose a valid Action " | festival --tts ')
     except KeyboardInterrupt:
        GPIO.cleanup()
        pass
 
+GPIO.cleanup()
 
 if __name__ == '__main__':
     main()

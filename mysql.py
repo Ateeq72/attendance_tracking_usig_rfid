@@ -96,5 +96,13 @@ def getuserName(tagId):
     full_name = getname(tagId) + " " + getsurname(tagId)
     return full_name
 
+def getonlyName(tagId):
+    db = connect()
+    cur = db.cursor()
+    cur1 = db.cursor()
+    cur.execute("SELECT name FROM users WHERE tagId=%s",(tagId))
+    name_data = cur.fetchone()[0]
+    db.close()
+    return name_data
 
 
